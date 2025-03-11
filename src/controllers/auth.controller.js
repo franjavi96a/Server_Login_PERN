@@ -2,6 +2,8 @@ import pool from "../db/database.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import config from "../config.js";
+
 
 const saltRounds = 10;
 
@@ -25,7 +27,44 @@ const registerUsuer = async (req, res) => {
     }
 };
 
+const loginUser = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ message: "Todos los campos son obligatorios" })
+        }
+
+        const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: "Usuario incorrecto" })
+        }
+
+        const user = result.rows[0];
+        //Compara la contraseña ingresada con la encriptada en la BD
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            res.status(401).json({ message: "La contraseña es incorrecta" });
+        }
+
+        //Generar el token con JWT
+        const token = jwt.sign(
+            {
+                user_id: user.user_id,
+                username: user.username,
+                role_id: user.role_id,
+            },
+            config.jwtSecret,
+            { expiresIn: "1h" }
+        );
+        res.status(200).send({ token });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 //Exportar todos los metodos
 export const methods = {
-    registerUsuer
+    registerUsuer,
+    loginUser
 }
