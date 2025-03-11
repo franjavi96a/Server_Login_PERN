@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import routes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(cors());
 app.get('/', (req, res, next) => {
     res.send("Welcome to API Login");
 })
+
+app.use('/api', routes)
 
 
 export default app;
