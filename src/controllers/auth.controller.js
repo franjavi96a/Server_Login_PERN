@@ -27,6 +27,7 @@ const registerUsuer = async (req, res) => {
     }
 };
 
+//Metodo para loguear un usuario usando JWT
 const loginUser = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -44,7 +45,7 @@ const loginUser = async (req, res) => {
         //Compara la contraseña ingresada con la encriptada en la BD
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            res.status(401).json({ message: "La contraseña es incorrecta" });
+            return res.status(401).json({ message: "La contraseña es incorrecta" });
         }
 
         //Generar el token con JWT
@@ -63,8 +64,30 @@ const loginUser = async (req, res) => {
     }
 };
 
+//Metodo para cambiar la contraseña de un usuario
+const changePassword = async (req, res) => {
+    try {
+        const { user_id } = req.user; // id obtenido del middleware JWT
+        const { newPassword } = req.body;
+
+        //Validar que todos los campos sean obligatorios
+        if (!newPassword) {
+            return res.status(400).json({ error: "Todos los campos son obligatorios" });
+        }
+
+        //Encriptar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        const result = await pool.query("UPDATE users SET password = $1 WHERE user_id = $2 RETURNING *", [hashedPassword, user_id]);
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 //Exportar todos los metodos
 export const methods = {
     registerUsuer,
-    loginUser
+    loginUser,
+    changePassword
 }
