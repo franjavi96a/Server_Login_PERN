@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import config from "../config.js";
 import pool from "../db/database.js";
 
+//Metdo para verificar el token del usuario logueado 
 export const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];// Se espera formato "Bearer token"
     if (!token) return res.status(401).json({ message: "Acceso denegado" });
@@ -13,6 +14,7 @@ export const verifyToken = (req, res, next) => {
     })
 };
 
+//Metodo para verificar si el usuario logueado es un Administrador
 export const isAdmin = async (req, res, next) => {
     try {
         const result = await pool.query("SELECT role_id FROM roles WHERE role_name = 'Administrador'");
