@@ -15,8 +15,8 @@ export const verifyToken = (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
     try {
-        const result = await pool.query("SELECT role_id FROM roles WHERE role_name = 'Administrator'");
-        const adminRoleId = result.rows[0]?.role_id;
+        const result = await pool.query("SELECT role_id FROM roles WHERE role_name = 'Administrador'");
+        const adminRoleId = result.rows[0]?.role_id; // se utiliza ? para evitar posibles errores de undefined
 
         if (req.user.role_id !== adminRoleId) {
             return res.status(403).json({ message: "Acceso denegado" });
