@@ -11,5 +11,9 @@ export default {
         password: process.env.DB_PASSWORD,
         port: process.env.DB_PORT,
     },
-    jwtSecret: process.env.JWT_SECRET
+    jwtSecret: process.env.JWT_SECRET,
+    email:{
+        user: process.env.EMAIL_USER,
+        pass: process.env.CLAVE_APP,
+    }
 }
