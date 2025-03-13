@@ -6,6 +6,7 @@ const router = Router();
 
 //Rutas publicas
 router.post("/login", authController.loginUser);
+router.post("/recover-password", authController.recoverPassword);
 
 //Rutas que requieren autenticación (usuario logueado)
 router.post("/changepassword", verifyToken, authController.changePassword);
