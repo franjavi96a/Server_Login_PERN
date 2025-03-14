@@ -180,11 +180,11 @@ const deleteUser = async (req, res) => {
 const assignRole = async (req, res) => {
     try {
         const { user_id, role_id } = req.body;
-        if(!user_id || !role_id){
-            return res.status(400).json({message: 'Ingrese los valores'});
+        if (!user_id || !role_id) {
+            return res.status(400).json({ message: 'Ingrese los valores' });
         }
         const result = await pool.query("UPDATE users SET role_id = $1, updated_at = NOW()  WHERE user_id =$2", [role_id, user_id]);
-        res.status(200).json({message:'Rol actuliazado'})
+        res.status(200).json({ message: 'Rol actuliazado' })
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
