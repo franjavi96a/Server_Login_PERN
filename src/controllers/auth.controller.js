@@ -140,7 +140,7 @@ const recoverPasswordEmail = async (req, res) => {
     }
 }
 
-//Metodo para cambiar la contraseña por codgo de recuperacion
+//Metodo para resetear la contraseña por codigo de recuperacion
 const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
@@ -149,16 +149,30 @@ const resetPassword = async (req, res) => {
         if (!token || !newPassword) {
             return res.status(400).json({ error: "Todos los campos son obligatorios" });
         }
-        const reset_token = await pool.query("SELECT reset_token FROM users WHERE reset_token = $1", [token]);
-        if (reset_token.rows.length === 0) {
+        // Iniciar transacción
+        await pool.query("BEGIN");
+
+        const result = await pool.query("SELECT reset_token, reset_expires FROM users WHERE reset_token = $1", [token]);
+        if (result.rows.length === 0) {
             return res.status(401).json({ message: "Token no valido" });
+        }
+        //Validar que el token no haya expirado
+        const { reset_expires } = result.rows[0];
+        if (reset_expires < new Date()) {
+            await pool.query("UPDATE users SET reset_token = NULL, reset_expires = NULL WHERE reset_token = $1", [token]);
+            return res.status(401).json({ message: "Token expirado" });
         }
         //Encriptar la nueva contraseña
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        const result = await pool.query("UPDATE users SET password = $1, updated_at = NOW() WHERE reset_token = $2 RETURNING *", [hashedPassword, token]);
+        await pool.query("UPDATE users SET password = $1, updated_at = NOW(), reset_token = NULL, reset_expires = NULL WHERE reset_token = $2 RETURNING *", [hashedPassword, token]);
+
+        // Confirmar la transacción
+        await pool.query("COMMIT");
+
         res.status(200).json({ message: 'Contraseña cambiada correctamente' });
     } catch (error) {
+        await pool.query("ROLLBACK"); // Revertir cambios si algo falla
         res.status(500).json({ error: error.message });
     }
 };
