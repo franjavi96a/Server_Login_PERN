@@ -79,8 +79,8 @@ const changePassword = async (req, res) => {
         //Encriptar la nueva contraseña
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        const result = await pool.query("UPDATE users SET password = $1 WHERE user_id = $2 RETURNING *", [hashedPassword, user_id]);
-        res.status(200).json(result.rows[0]);
+        const result = await pool.query("UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *", [hashedPassword, user_id]);
+        res.status(200).json({message: 'Contraseña cambiada correctamente'});
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -113,7 +113,7 @@ const recoverPassword = async (req, res) => {
         // Generar un token de recuperación de 6 digitos
         const token = crypto.randomInt(100000, 1000000);
 
-        // Guardar el token en la BD, junto con una fecha de expiración (por ejemplo, 1 hora)
+        // Guardar el token en la BD, junto con una fecha de expiración de 5 minutos
         await pool.query("UPDATE users SET reset_token = $1, reset_expires = NOW() + INTERVAL '5 minutes' WHERE email = $2", [token, email]);
 
         // Configurar el correo a enviar
