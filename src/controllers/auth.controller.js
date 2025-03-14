@@ -9,7 +9,7 @@ import nodemailer from "nodemailer"; //Para enviar el correo de recuperación de
 const saltRounds = 10;
 
 // Registrar un nuevo usuario (este endpoint lo podrán usar el admin para crear usuarios con roles específicos)
-const registerUsuer = async (req, res) => {
+const registerUsuer = async (req, res, next) => {
     try {
         const { username, email, password, role_id } = req.body;
 
@@ -44,12 +44,12 @@ const registerUsuer = async (req, res) => {
         res.status(201).json({ message: 'Usuario creado correctamente' });
     } catch (error) {
         await pool.query("ROLLBACK");
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 //Metodo para loguear un usuario usando JWT
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
     try {
         const { username, password } = req.body;
 
@@ -81,12 +81,12 @@ const loginUser = async (req, res) => {
         );
         res.status(200).send({ token });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 //Metodo para cambiar la contraseña de un usuario
-const changePassword = async (req, res) => {
+const changePassword = async (req, res, next) => {
     try {
         const { user_id } = req.user; // id obtenido del middleware JWT
         const { newPassword } = req.body;
@@ -102,7 +102,7 @@ const changePassword = async (req, res) => {
         const result = await pool.query("UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *", [hashedPassword, user_id]);
         res.status(200).json({ message: 'Contraseña cambiada correctamente' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -117,7 +117,7 @@ const transporter = nodemailer.createTransport({
 
 
 //Metodo para recuperar las constrasñas de los usuarios
-const recoverPasswordEmail = async (req, res) => {
+const recoverPasswordEmail = async (req, res, next) => {
     try {
         const { email } = req.body;
 
@@ -156,12 +156,12 @@ const recoverPasswordEmail = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 }
 
 //Metodo para resetear la contraseña por codigo de recuperacion
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
     try {
         const { token, newPassword } = req.body;
 
@@ -193,25 +193,25 @@ const resetPassword = async (req, res) => {
         res.status(200).json({ message: 'Contraseña cambiada correctamente' });
     } catch (error) {
         await pool.query("ROLLBACK"); // Revertir cambios si algo falla
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 //Metodo eliminar un usurio (solo administradores)
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
     try {
         const { user_id } = req.params;
         if (!user_id) {
             return res.status(400).json({ message: "Ingrese el id del usuario" });
         }
-        const result = await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+        await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
         res.status(204).json({ message: "Usuario eliminado correctamente" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     };
 };
 
-const assignRole = async (req, res) => {
+const assignRole = async (req, res, next) => {
     try {
         const { user_id, role_id } = req.body;
         if (!user_id || !role_id) {
@@ -220,7 +220,7 @@ const assignRole = async (req, res) => {
         const result = await pool.query("UPDATE users SET role_id = $1, updated_at = NOW()  WHERE user_id =$2", [role_id, user_id]);
         res.status(200).json({ message: 'Rol actuliazado' })
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 }
 

@@ -15,6 +15,12 @@ app.get('/', (req, res, next) => {
     res.send("Welcome to API Login");
 })
 
+// Manejo de errores globales
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
 app.use('/api', routes)
 
 
