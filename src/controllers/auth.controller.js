@@ -18,12 +18,32 @@ const registerUsuer = async (req, res) => {
             return res.status(400).json({ error: "Todos los campos son obligatorios" });
         }
 
+        // Verificar si el username o email ya existen en la base de datos
+        const checkUser = await pool.query(
+            "SELECT username, email FROM users WHERE username = $1 OR email = $2", [username, email]);
+
+        if (checkUser.rowCount > 0) {
+            if (checkUser.rows.some(user => user.username === username)) {
+                return res.status(400).json({ error: "El username ya está en uso." });
+            }
+            if (checkUser.rows.some(user => user.email === email)) {
+                return res.status(400).json({ error: "El email ya está registrado." });
+            }
+        }
+        //Encriptar la contraseña
         const user_id = crypto.randomUUID();
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const result = await pool.query(`INSERT INTO users (user_id, username, password, email, role_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`, [user_id, username, hashedPassword, email, role_id]);
-        res.status(201).json(result.rows[0]);
+        // Usar transacción para mayor seguridad en la inserción
+        await pool.query("BEGIN");
+
+        await pool.query(`INSERT INTO users (user_id, username, password, email, role_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`, [user_id, username, hashedPassword, email, role_id]);
+
+        await pool.query("COMMIT");
+
+        res.status(201).json({ message: 'Usuario creado correctamente' });
     } catch (error) {
+        await pool.query("ROLLBACK");
         res.status(500).json({ error: error.message });
     }
 };
