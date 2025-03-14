@@ -15,6 +15,7 @@ router.post("/change-password", verifyToken, authController.changePassword);
 
 //Rutas protegidas para Administradores
 router.post("/register", verifyToken, isAdmin, authController.registerUsuer);
+router.delete("/delete-user/:user_id",verifyToken,isAdmin,authController.deleteUser);
 
 
 export default router;
