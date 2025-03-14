@@ -80,7 +80,7 @@ const changePassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
         const result = await pool.query("UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *", [hashedPassword, user_id]);
-        res.status(200).json({message: 'Contraseña cambiada correctamente'});
+        res.status(200).json({ message: 'Contraseña cambiada correctamente' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -97,7 +97,7 @@ const transporter = nodemailer.createTransport({
 
 
 //Metodo para recuperar las constrasñas de los usuarios
-const recoverPassword = async (req, res) => {
+const recoverPasswordEmail = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -140,10 +140,34 @@ const recoverPassword = async (req, res) => {
     }
 }
 
+//Metodo para cambiar la contraseña por codgo de recuperacion
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        //Validar que todos los campos sean obligatorios
+        if (!token || !newPassword) {
+            return res.status(400).json({ error: "Todos los campos son obligatorios" });
+        }
+        const reset_token = await pool.query("SELECT reset_token FROM users WHERE reset_token = $1", [token]);
+        if (reset_token.rows.length === 0) {
+            return res.status(401).json({ message: "Token no valido" });
+        }
+        //Encriptar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        const result = await pool.query("UPDATE users SET password = $1, updated_at = NOW() WHERE reset_token = $2 RETURNING *", [hashedPassword, token]);
+        res.status(200).json({ message: 'Contraseña cambiada correctamente' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 //Exportar todos los metodos
 export const methods = {
     registerUsuer,
     loginUser,
     changePassword,
-    recoverPassword
+    recoverPasswordEmail,
+    resetPassword
 }
