@@ -164,18 +164,31 @@ const resetPassword = async (req, res) => {
 };
 
 //Metodo eliminar un usurio (solo administradores)
-const  deleteUser= async ( req,res)=>{
+const deleteUser = async (req, res) => {
     try {
-        const {user_id} = req.params;
-        if(!user_id){
-            return res.status(400).json({message: "Ingrese el id del usuario"});
+        const { user_id } = req.params;
+        if (!user_id) {
+            return res.status(400).json({ message: "Ingrese el id del usuario" });
         }
         const result = await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
-        res.status(204).json({message: "Usuario eliminado correctamente"});
+        res.status(204).json({ message: "Usuario eliminado correctamente" });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     };
 };
+
+const assignRole = async (req, res) => {
+    try {
+        const { user_id, role_id } = req.body;
+        if(!user_id || !role_id){
+            return res.status(400).json({message: 'Ingrese los valores'});
+        }
+        const result = await pool.query("UPDATE users SET role_id = $1, updated_at = NOW()  WHERE user_id =$2", [role_id, user_id]);
+        res.status(200).json({message:'Rol actuliazado'})
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 //Exportar todos los metodos
 export const methods = {
@@ -185,5 +198,5 @@ export const methods = {
     recoverPasswordEmail,
     resetPassword,
     deleteUser,
-    
+    assignRole,
 }

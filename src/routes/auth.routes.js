@@ -7,15 +7,16 @@ const router = Router();
 //Rutas publicas
 router.post("/login", authController.loginUser);
 router.post("/recover-password", authController.recoverPasswordEmail);
-router.post("/reset-password", authController.resetPassword);
+router.put("/reset-password", authController.resetPassword);
 
 
 //Rutas que requieren autenticación (usuario logueado)
-router.post("/change-password", verifyToken, authController.changePassword);
+router.put("/change-password", verifyToken, authController.changePassword);
 
 //Rutas protegidas para Administradores
 router.post("/register", verifyToken, isAdmin, authController.registerUsuer);
-router.delete("/delete-user/:user_id",verifyToken,isAdmin,authController.deleteUser);
+router.delete("/delete-user/:user_id", verifyToken, isAdmin, authController.deleteUser);
+router.put("/assign-role", verifyToken, isAdmin, authController.assignRole);
 
 
 export default router;
