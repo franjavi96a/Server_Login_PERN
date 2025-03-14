@@ -163,11 +163,27 @@ const resetPassword = async (req, res) => {
     }
 };
 
+//Metodo eliminar un usurio (solo administradores)
+const  deleteUser= async ( req,res)=>{
+    try {
+        const {user_id} = req.params;
+        if(!user_id){
+            return res.status(400).json({message: "Ingrese el id del usuario"});
+        }
+        const result = await pool.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+        res.status(204).json({message: "Usuario eliminado correctamente"});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    };
+};
+
 //Exportar todos los metodos
 export const methods = {
     registerUsuer,
     loginUser,
     changePassword,
     recoverPasswordEmail,
-    resetPassword
+    resetPassword,
+    deleteUser,
+    
 }
