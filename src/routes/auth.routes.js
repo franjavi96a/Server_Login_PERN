@@ -6,10 +6,12 @@ const router = Router();
 
 //Rutas publicas
 router.post("/login", authController.loginUser);
-router.post("/recover-password", authController.recoverPassword);
+router.post("/recover-password", authController.recoverPasswordEmail);
+router.post("/reset-password", authController.resetPassword);
+
 
 //Rutas que requieren autenticación (usuario logueado)
-router.post("/changepassword", verifyToken, authController.changePassword);
+router.post("/change-password", verifyToken, authController.changePassword);
 
 //Rutas protegidas para Administradores
 router.post("/register", verifyToken, isAdmin, authController.registerUsuer);
