@@ -11,10 +11,10 @@ const saltRounds = 10;
 // Registrar un nuevo usuario (este endpoint lo podrán usar el admin para crear usuarios con roles específicos)
 const registerUsuer = async (req, res, next) => {
     try {
-        const { username, email, password, role_id } = req.body;
+        const { username, email, password, role_name } = req.body;
 
         //Validar que todos los campos sean obligatorios
-        if (!username || !email || !password || !role_id) {
+        if (!username || !email || !password || !role_name) {
             return res.status(400).json({ error: "Todos los campos son obligatorios" });
         }
 
@@ -30,6 +30,14 @@ const registerUsuer = async (req, res, next) => {
                 return res.status(400).json({ error: "El email ya está registrado." });
             }
         }
+
+        // Validar el rol ingresado existe
+        const role = await pool.query("SELECT role_id FROM roles WHERE role_name = $1", [role_name]);
+        if (role.rows.length === 0) {
+            return res.status(400).json({ error: "El rol no existe." });
+        }
+        const role_id = role.rows[0].role_id;
+
         //Encriptar la contraseña
         const user_id = crypto.randomUUID();
         const hashedPassword = await bcrypt.hash(password, saltRounds);
