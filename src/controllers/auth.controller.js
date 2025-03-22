@@ -149,10 +149,23 @@ const recoverPasswordEmail = async (req, res, next) => {
             from: '"Soporte" <${config.email.user}>', // Debe ser un correo verificado en tu proveedor SMTP
             to: email,
             subject: 'Recuperación de contraseña',
-            html: `<p>Hola <strong>${user.username}</strong>,</p>
-                    <p>Para recuperar tu contraseña, utiliza el siguiente codigo:</p>
-                    <p><strong>${token}</strong></p>
-                    <p>Si no solicitaste este cambio, ignora este correo.</p>`
+            html: ` <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; line-height: 1.6;">
+                        <p>Hola <strong>${user.username}</strong>,</p>
+
+                        <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+
+                        <p>Utiliza el siguiente código para continuar con el proceso:</p>
+
+                        <p style="font-size: 20px; font-weight: bold; color: #007bff; background: #f4f4f4; padding: 10px; display: inline-block; border-radius: 5px;">
+                            ${token}
+                        </p>
+
+                        <p>Este código es válido por <strong>5 minutos</strong>. Si expira, puedes solicitar uno nuevo.</p>
+
+                        <p>Si no realizaste esta solicitud, puedes ignorar este mensaje. Tu cuenta sigue segura.</p>
+
+                        <p>Atentamente, <br><strong>El equipo de soporte</strong></p>
+                    </div>`
         };
 
         // Enviar el correo
