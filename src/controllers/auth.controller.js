@@ -232,6 +232,25 @@ const assignRole = async (req, res, next) => {
     }
 }
 
+//Metodo para listar todos los usuarios
+const listUsers = async (req, res, next) => {
+    try {
+        const result = await pool.query("SELECT \
+            u.user_id,\
+            u.username,\
+            u.email,\
+            r.role_name,\
+            TO_CHAR(u.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,\
+            TO_CHAR(u.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updated_at\
+            FROM users u \
+            JOIN roles r ON u.role_id = r.role_id");
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+}
+
 //Exportar todos los metodos
 export const methods = {
     registerUsuer,
@@ -241,4 +260,5 @@ export const methods = {
     resetPassword,
     deleteUser,
     assignRole,
+    listUsers
 }
