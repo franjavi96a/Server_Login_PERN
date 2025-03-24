@@ -256,7 +256,7 @@ const listUsers = async (req, res, next) => {
             TO_CHAR(u.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,\
             TO_CHAR(u.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updated_at\
             FROM users u \
-            JOIN roles r ON u.role_id = r.role_id");
+            JOIN roles r ON u.role_id = r.role_id ORDER BY created_at ASC");
 
         res.status(200).json(result.rows);
     } catch (error) {
