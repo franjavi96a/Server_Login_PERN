@@ -195,13 +195,13 @@ const resetPassword = async (req, res, next) => {
 
         const result = await pool.query("SELECT reset_token, reset_expires FROM users WHERE reset_token = $1", [token]);
         if (result.rows.length === 0) {
-            return res.status(401).json({ message: "Token no valido" });
+            return res.status(401).json({ message: "Codigo de recuperación no valido" });
         }
         //Validar que el token no haya expirado
         const { reset_expires } = result.rows[0];
         if (reset_expires < new Date()) {
             await pool.query("UPDATE users SET reset_token = NULL, reset_expires = NULL WHERE reset_token = $1", [token]);
-            return res.status(401).json({ message: "Token expirado" });
+            return res.status(401).json({ message: "Codigo de recuperación expirado" });
         }
         //Encriptar la nueva contraseña
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
